@@ -1,0 +1,25 @@
+command:
+  no-arg-message: '&e&lDurability&a&lTools &bv%version% | Commands: &3/dt help'
+  no-permission: '&cNo permission for this command! (%permission%)'
+  no-such-command: '&cNo such command! Try /dt help'
+  not-enough-argument: '&cNot enough arguments!'
+  player-only: '&cYou''re a console, you can''t do that!'
+  usage: '&7usage: %usage%'
+  help-command:
+    no_permitted-command: '&cYou don''t have permissions for any of the commands..'
+    line: '&7========================================='
+    content: '&6(&a%usage%&6)&2 - %description%'
+    description:
+      help: '&7Shows command help.'
+      reload: '&7Reloads the config.'
+      repair: '&7Repairs item in main hand.'
+  reload-command:
+    start: '&7Reloading..'
+    complete: '&aReloaded!'
+  repair-command:
+    economy-is-not-enabled: "&cVault is not enabled."
+    cannot-repair-air: "&cPlease hold item to repair."
+    cannot-repair-it: "&cSorry, we cannot repair it."
+    item-is-not-damaged: "&bItem is not damaged!"
+    not-enough-money: "&cNot enough money."
+    notify-cost: "&7Cost is &b%cost%&7. If it's ok, type /dt repair confirm"

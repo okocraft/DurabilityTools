@@ -1,0 +1,24 @@
+name: "${project.artifactId}"
+version: "${project.version}"
+api-version: "1.17"
+main: "${project.groupId}.${project.artifactId}"
+author: "LazyGon"
+
+softdepend:
+  - "Vault"
+  - "PlaceholderAPI"
+
+commands:
+  durabilitytools:
+    aliases: [ "dt" ]
+
+permissions:
+  durabilitytools.commands.repair:
+    default: true
+  durabilitytools.commands.reload:
+    default: op
+  durabilitytools.commands.setdamage:
+    default: op
+  durabilitytools.commands.help:
+    default: true
+

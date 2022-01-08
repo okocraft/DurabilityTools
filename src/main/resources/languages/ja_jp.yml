@@ -1,0 +1,25 @@
+command:
+  no-arg-message: '&e&lDurability&a&lTools &bv%version% | コマンド: &3/dt help'
+  no-permission: '&c権限がありません!(%permission%)'
+  no-such-command: '&cそのコマンドは存在しません! /dt help'
+  not-enough-argument: '&c引数が足りません!'
+  player-only: '&cコンソールからは使えません!'
+  usage: '&7使用法: %usage%'
+  help-command:
+    no_permitted-command: '&c権限があるコマンドが一つもありません。'
+    line: '&7========================================='
+    content: '&6(&a%usage%&6)&2 - %description%'
+    description:
+      help: '&7ヘルプを表示します。'
+      reload: '&7設定を再読込します。'
+      repair: '&7手に持っているアイテムを直します。'
+  reload-command:
+    start: '&7設定を再読込しています。'
+    complete: '&a再読み込み完了!'
+  repair-command:
+    economy-is-not-enabled: "&cVaultが有効化されていません。"
+    cannot-repair-air: "&c直すアイテムを手に持ってください。"
+    cannot-repair-it: "&cそれは直せません。"
+    item-is-not-damaged: "&bアイテムは傷ついていません!"
+    not-enough-money: "&cお金が足りません。"
+    notify-cost: "&7コストは &b%cost%&7 です。よろしければ、次のコマンドを打ってください: /dt repair confirm"
