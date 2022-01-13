@@ -66,6 +66,7 @@ public class Commands implements CommandExecutor, TabCompleter {
 
         register(new HelpCommand(this));
         register(new ReloadCommand(this));
+        register(new SetDamageCommand(this));
         try {
             register(new RepairCommand(this));
         } catch (Throwable t) {
