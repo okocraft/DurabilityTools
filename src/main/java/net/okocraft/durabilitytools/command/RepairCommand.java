@@ -68,8 +68,8 @@ public class RepairCommand extends BaseCommand {
         Damageable damageableMeta = (Damageable) item.getItemMeta();
 
         int currentDamage = damageableMeta.getDamage();
-        int maxDurability = item.getType().getMaxDurability();
-        if (currentDamage == 0 || maxDurability == 0) {
+        int maxDurability = item.getType().getMaxDurability() - 1;
+        if (currentDamage == 0 || maxDurability <= 0) {
             messages.itemIsNotDamaged().sendTo(sender);
             return false;
         }
