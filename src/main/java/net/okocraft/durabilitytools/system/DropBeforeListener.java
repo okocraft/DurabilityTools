@@ -32,8 +32,11 @@ public class DropBeforeListener implements Listener {
     private static final NamespacedKey DROPPED =
             Objects.requireNonNull(NamespacedKey.fromString("dropped"));
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void beforeItemBreak(PlayerItemDamageEvent event) {
+        if (!event.getPlayer().hasPermission("durabilitytools.system.dropbefore")) {
+            return;
+        }
         ItemStack item = event.getItem();
 
         ItemMeta meta = item.getItemMeta();
@@ -79,10 +82,13 @@ public class DropBeforeListener implements Listener {
         event.getPlayer().getInventory().setItemInMainHand(handItem);
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void beforeItemBreak(PlayerInteractEvent event) {
         if (event.getPlayer().getGameMode() == GameMode.CREATIVE
                 || event.getPlayer().getGameMode() == GameMode.SPECTATOR) {
+            return;
+        }
+        if (!event.getPlayer().hasPermission("durabilitytools.system.dropbefore")) {
             return;
         }
         ItemStack item = event.getItem();
@@ -121,7 +127,12 @@ public class DropBeforeListener implements Listener {
         drop.setItemMeta(damageable);
 
         if (event.getPlayer().getInventory().getItem(itemSlot).equals(item)) {
-            event.getPlayer().getInventory().setItem(itemSlot, null);
+            if (item.getAmount() > 1) {
+                item.setAmount(item.getAmount() - 1);
+                event.getPlayer().getInventory().setItem(itemSlot, item);
+            } else {
+                event.getPlayer().getInventory().setItem(itemSlot, null);
+            }
         } else {
             event.getPlayer().getInventory().removeItem(drop);
         }
@@ -188,21 +199,8 @@ public class DropBeforeListener implements Listener {
             return;
         }
 
-        event.setCancelled(true);
-        if (event.getCause() == EntityDamageEvent.DamageCause.LAVA) {
-            ItemStack itemStack = item.getItemStack().clone();
-            item.setItemStack(new ItemStack(Material.NETHERITE_INGOT));
-            entity.setFireTicks(0);
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    item.setItemStack(itemStack);
-                }
-            }.runTask(plugin);
-        } else if (event.getCause() == EntityDamageEvent.DamageCause.CONTACT) {
-            item.setVelocity(item.getVelocity().multiply(-1));
-        } else if (event.getCause() == EntityDamageEvent.DamageCause.VOID) {
-            event.setCancelled(false);
+        if (event.getCause() != EntityDamageEvent.DamageCause.VOID) {
+            event.setCancelled(true);
         }
     }
 }

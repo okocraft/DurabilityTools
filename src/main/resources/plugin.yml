@@ -13,6 +13,8 @@ commands:
     aliases: [ "dt" ]
 
 permissions:
+  durabilitytools.system.dropbefore:
+    default: true
   durabilitytools.commands.repair:
     default: true
   durabilitytools.commands.reload:
