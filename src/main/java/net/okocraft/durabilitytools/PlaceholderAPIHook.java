@@ -5,6 +5,8 @@ import net.okocraft.durabilitytools.command.BaseCommand;
 import net.okocraft.durabilitytools.command.Commands;
 import net.okocraft.durabilitytools.command.RepairCommand;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,9 +45,30 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String identifier) {
-        if (player == null || !identifier.startsWith(getIdentifier()) || !(plugin instanceof DurabilityTools)) {
+        if (player == null || !(plugin instanceof DurabilityTools)) {
             return "0";
         }
+
+        if (!identifier.startsWith("repaircost")) {
+            return "0";
+        }
+
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item.getType().isAir()) {
+            return "0";
+        }
+
+        if (!(item.getItemMeta() instanceof Damageable)) {
+            return "0";
+        }
+        Damageable damageableMeta = (Damageable) item.getItemMeta();
+
+        int currentDamage = damageableMeta.getDamage();
+        int maxDurability = item.getType().getMaxDurability() - 1;
+        if (currentDamage == 0 || maxDurability <= 0) {
+            return "0";
+        }
+        double wearRate = Math.round(((double) currentDamage / (double) maxDurability) * 1000D) / 10D;
 
         Commands commands = ((DurabilityTools) plugin).commands();
         if (commands == null) {
@@ -56,8 +79,7 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
         if (!(baseCommand instanceof RepairCommand)) {
             return "0";
         }
-
         RepairCommand repairCommand = (RepairCommand) baseCommand;
-        return String.valueOf(repairCommand.getCost(player.getInventory().getItemInMainHand()));
+        return String.valueOf(Math.round(wearRate * repairCommand.getCost(item)) / 100D);
     }
 }
