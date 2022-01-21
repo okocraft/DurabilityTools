@@ -8,12 +8,15 @@ import org.bukkit.GameMode;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -32,84 +35,44 @@ public class DropBeforeListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void beforeItemBreak(PlayerItemDamageEvent event) {
-        if (!event.getPlayer().hasPermission("durabilitytools.system.dropbefore")) {
-            return;
-        }
-        ItemStack item = event.getItem();
-
-        ItemMeta meta = item.getItemMeta();
-        if (!(meta instanceof Damageable)) {
-            return;
-        }
-        Damageable damageable = (Damageable) meta;
-
-        if (item.getType().getMaxDurability() > event.getDamage() + damageable.getDamage()) {
-            return;
-        }
-
-        EquipmentSlot itemSlotTemp = null;
-        for (EquipmentSlot slot : EquipmentSlot.values()) {
-            ItemStack slotItem = event.getPlayer().getInventory().getItem(slot);
-            if (slotItem != null && !slotItem.getType().isAir() && slotItem.equals(item)) {
-                itemSlotTemp = slot;
-                break;
-            }
-        }
-        final EquipmentSlot itemSlot = itemSlotTemp;
-        if (itemSlot == null || !plugin.mainConfig().appliedSlotsDropBroken().contains(itemSlot)) {
-            return;
-        }
-
-        event.setCancelled(true);
-
-        ItemStack drop = item.clone();
-        drop.setAmount(1);
-        damageable.setDamage(drop.getType().getMaxDurability() - 1);
-        damageable.getPersistentDataContainer().set(DROPPED, PersistentDataType.STRING, event.getPlayer().getUniqueId().toString());
-        drop.setItemMeta(damageable);
-
-        if (event.getPlayer().getInventory().getItem(itemSlot).equals(item)) {
-            event.getPlayer().getInventory().setItem(itemSlot, null);
-        } else {
-            event.getPlayer().getInventory().removeItem(drop);
-        }
-
-        ItemStack handItem = event.getPlayer().getInventory().getItemInMainHand();
-        event.getPlayer().getInventory().setItemInMainHand(drop);
-        event.getPlayer().dropItem(false);
-        if (plugin.mainConfig().debug()) {
-            plugin.getLogger().info("debug: " + event.getPlayer().getName() + " broke " + drop.getType().name() + " but cancelled and dropped it.");
-        }
-        event.getPlayer().getInventory().setItemInMainHand(handItem);
+        beforeItemBreak(event, event.getPlayer(), event.getItem());
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void beforeItemBreak(PlayerInteractEvent event) {
-        if (event.getPlayer().getGameMode() == GameMode.CREATIVE
-                || event.getPlayer().getGameMode() == GameMode.SPECTATOR) {
+        beforeItemBreak(event, event.getPlayer(), event.getItem());
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    public void beforeItemBreak(PlayerInteractEntityEvent event) {
+        beforeItemBreak(event, event.getPlayer(), event.getPlayer().getInventory().getItem(event.getHand()));
+    }
+
+    public void beforeItemBreak(Cancellable event, Player player, ItemStack used) {
+        if (player.getGameMode() == GameMode.CREATIVE
+                || player.getGameMode() == GameMode.SPECTATOR) {
             return;
         }
-        if (!event.getPlayer().hasPermission("durabilitytools.system.dropbefore")) {
+        if (!player.hasPermission("durabilitytools.system.dropbefore")) {
             return;
         }
-        ItemStack item = event.getItem();
-        if (item == null) {
+        if (used == null) {
             return;
         }
-        ItemMeta meta = item.getItemMeta();
+        ItemMeta meta = used.getItemMeta();
         if (!(meta instanceof Damageable)) {
             return;
         }
         Damageable damageable = (Damageable) meta;
-        int maxDurability = item.getType().getMaxDurability();
+        int maxDurability = used.getType().getMaxDurability();
         if (maxDurability == 0 || damageable.getDamage() < maxDurability - 1) {
             return;
         }
 
         EquipmentSlot itemSlotTemp = null;
         for (EquipmentSlot slot : EquipmentSlot.values()) {
-            ItemStack slotItem = event.getPlayer().getInventory().getItem(slot);
-            if (slotItem != null && !slotItem.getType().isAir() && slotItem.equals(item)) {
+            ItemStack slotItem = player.getInventory().getItem(slot);
+            if (slotItem != null && !slotItem.getType().isAir() && slotItem.equals(used)) {
                 itemSlotTemp = slot;
                 break;
             }
@@ -121,30 +84,30 @@ public class DropBeforeListener implements Listener {
 
         event.setCancelled(true);
 
-        ItemStack drop = item.clone();
+        ItemStack drop = used.clone();
         drop.setAmount(1);
         damageable.setDamage(drop.getType().getMaxDurability() - 1);
-        damageable.getPersistentDataContainer().set(DROPPED, PersistentDataType.STRING, event.getPlayer().getUniqueId().toString());
+        damageable.getPersistentDataContainer().set(DROPPED, PersistentDataType.STRING, player.getUniqueId().toString());
         drop.setItemMeta(damageable);
 
-        if (event.getPlayer().getInventory().getItem(itemSlot).equals(item)) {
-            if (item.getAmount() > 1) {
-                item.setAmount(item.getAmount() - 1);
-                event.getPlayer().getInventory().setItem(itemSlot, item);
+        if (player.getInventory().getItem(itemSlot).equals(used)) {
+            if (used.getAmount() > 1) {
+                used.setAmount(used.getAmount() - 1);
+                player.getInventory().setItem(itemSlot, used);
             } else {
-                event.getPlayer().getInventory().setItem(itemSlot, null);
+                player.getInventory().setItem(itemSlot, null);
             }
         } else {
-            event.getPlayer().getInventory().removeItem(drop);
+            player.getInventory().removeItem(drop);
         }
 
-        ItemStack handItem = event.getPlayer().getInventory().getItemInMainHand();
-        event.getPlayer().getInventory().setItemInMainHand(drop);
-        event.getPlayer().dropItem(false);
+        ItemStack handItem = player.getInventory().getItemInMainHand();
+        player.getInventory().setItemInMainHand(drop);
+        player.dropItem(false);
         if (plugin.mainConfig().debug()) {
-            plugin.getLogger().info("debug: " + event.getPlayer().getName() + " broke " + drop.getType().name() + " but cancelled and dropped it.");
+            plugin.getLogger().info("debug: " + player.getName() + " broke " + drop.getType().name() + " but cancelled and dropped it.");
         }
-        event.getPlayer().getInventory().setItemInMainHand(handItem);
+        player.getInventory().setItemInMainHand(handItem);
     }
 
     @EventHandler(ignoreCancelled = true)
