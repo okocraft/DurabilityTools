@@ -10,9 +10,12 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -38,14 +41,29 @@ public class DropBeforeListener implements Listener {
         beforeItemBreak(event, event.getPlayer(), event.getItem());
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.LOW)
     public void beforeItemBreak(PlayerInteractEvent event) {
+        // (ignoreCancelled = true) for PlayerInteractEvent
+        if (event.getAction() != Action.LEFT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_AIR &&
+                event.useInteractedBlock() == Event.Result.DENY && event.useItemInHand() == Event.Result.DENY) {
+            return;
+        }
         beforeItemBreak(event, event.getPlayer(), event.getItem());
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void beforeItemBreak(PlayerInteractEntityEvent event) {
         beforeItemBreak(event, event.getPlayer(), event.getPlayer().getInventory().getItem(event.getHand()));
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    public void beforeItemBreak(EntityDamageByEntityEvent event) {
+        Entity damager = event.getDamager();
+        if (!(damager instanceof Player)) {
+            return;
+        }
+        Player player = (Player) damager;
+        beforeItemBreak(event, player, player.getInventory().getItemInMainHand());
     }
 
     public void beforeItemBreak(Cancellable event, Player player, ItemStack used) {
