@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Unmodifiable;
 @AllArgsConstructor
 public @Data class Config implements Serializable {
 
+    private boolean debug;
     private int maxItemDamage;
     private @NonNull @Unmodifiable List<EquipmentSlot> appliedSlotsDropBroken;
     private @NonNull RepairCommand repairCommand;
@@ -26,6 +27,7 @@ public @Data class Config implements Serializable {
 
     private Config() {
         this(
+                true,
                 3,
                 List.of(EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD),
                 RepairCommand.DEFAULT_CONTENTS
@@ -46,6 +48,7 @@ public @Data class Config implements Serializable {
         }
 
         return new Config(
+                contents.getBoolean("debug"),
                 contents.getInt("max-item-damage", DEFAULT_CONTENTS.maxItemDamage),
                 Collections.unmodifiableList(appliedSlotsDropBroken),
                 RepairCommand.deserialize(contents.getConfigurationSection("repair-command"))
@@ -54,6 +57,7 @@ public @Data class Config implements Serializable {
     
     @Override
     public void storeContents(ConfigurationSection section) {
+        section.set("debug", debug);
         section.set("max-item-damage", maxItemDamage);
         section.set(
                 "applied-slots-drop-broken",

@@ -27,6 +27,12 @@ public class ReduceDamageListener implements Listener {
         int maxItemDamage = plugin.mainConfig().maxItemDamage();
         if (damage > maxItemDamage) {
             event.setDamage(maxItemDamage);
+            if (plugin.mainConfig().debug()) {
+                plugin.getLogger().info(
+                        "debug: " + event.getPlayer().getName() + " god " + damage + " durability damage to its "
+                                + event.getItem().getType().name() + " but reduced to " + maxItemDamage + " damage."
+                );
+            }
         }
     }
 }

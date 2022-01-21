@@ -5,7 +5,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import net.okocraft.durabilitytools.DurabilityTools;
 import org.bukkit.GameMode;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
@@ -22,7 +21,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 @RequiredArgsConstructor
 public class DropBeforeListener implements Listener {
@@ -79,6 +77,9 @@ public class DropBeforeListener implements Listener {
         ItemStack handItem = event.getPlayer().getInventory().getItemInMainHand();
         event.getPlayer().getInventory().setItemInMainHand(drop);
         event.getPlayer().dropItem(false);
+        if (plugin.mainConfig().debug()) {
+            plugin.getLogger().info("debug: " + event.getPlayer().getName() + " broke " + drop.getType().name() + " but cancelled and dropped it.");
+        }
         event.getPlayer().getInventory().setItemInMainHand(handItem);
     }
 
@@ -140,6 +141,9 @@ public class DropBeforeListener implements Listener {
         ItemStack handItem = event.getPlayer().getInventory().getItemInMainHand();
         event.getPlayer().getInventory().setItemInMainHand(drop);
         event.getPlayer().dropItem(false);
+        if (plugin.mainConfig().debug()) {
+            plugin.getLogger().info("debug: " + event.getPlayer().getName() + " broke " + drop.getType().name() + " but cancelled and dropped it.");
+        }
         event.getPlayer().getInventory().setItemInMainHand(handItem);
     }
 

@@ -1,3 +1,4 @@
+debug: true
 maximum-item-damage: 3
 
 # Use EquipmentSlot values (https://hub.spigotmc.org/javadocs/spigot/org/bukkit/inventory/EquipmentSlot.html)
