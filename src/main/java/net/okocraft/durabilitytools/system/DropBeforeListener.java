@@ -4,28 +4,21 @@ import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import net.okocraft.durabilitytools.DurabilityTools;
-import org.bukkit.GameMode;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemDamageEvent;
+import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataType;
 
 @RequiredArgsConstructor
@@ -33,126 +26,59 @@ public class DropBeforeListener implements Listener {
 
     private final DurabilityTools plugin;
 
-    private static final NamespacedKey DROPPED =
-            Objects.requireNonNull(NamespacedKey.fromString("dropped"));
+    private static final NamespacedKey DROPPED = Objects.requireNonNull(NamespacedKey.fromString("dropped"));
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-    public void beforeItemBreak(PlayerItemDamageEvent event) {
-        beforeItemBreak(event, event.getPlayer(), event.getItem());
-    }
-
-    @EventHandler(priority = EventPriority.LOW)
-    public void beforeItemBreak(PlayerInteractEvent event) {
-        // (ignoreCancelled = true) for PlayerInteractEvent
-        if (event.getAction() != Action.LEFT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_AIR &&
-                event.useInteractedBlock() == Event.Result.DENY && event.useItemInHand() == Event.Result.DENY) {
-            return;
-        }
-        beforeItemBreak(event, event.getPlayer(), event.getItem());
-    }
-
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-    public void beforeItemBreak(PlayerInteractEntityEvent event) {
-        beforeItemBreak(event, event.getPlayer(), event.getPlayer().getInventory().getItem(event.getHand()));
-    }
-
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-    public void beforeItemBreak(EntityDamageByEntityEvent event) {
-        Entity damager = event.getDamager();
-        if (!(damager instanceof Player)) {
-            return;
-        }
-        Player player = (Player) damager;
-        beforeItemBreak(event, player, player.getInventory().getItemInMainHand());
-    }
-
-    public void beforeItemBreak(Cancellable event, Player player, ItemStack used) {
-        if (player.getGameMode() == GameMode.CREATIVE
-                || player.getGameMode() == GameMode.SPECTATOR) {
-            return;
-        }
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onPlayerItemBreak(PlayerItemBreakEvent event) {
+        Player player = event.getPlayer();
         if (!player.hasPermission("durabilitytools.system.dropbefore")) {
             return;
         }
-        if (used == null) {
-            return;
-        }
-        ItemMeta meta = used.getItemMeta();
-        if (!(meta instanceof Damageable)) {
-            return;
-        }
-        Damageable damageable = (Damageable) meta;
-        int maxDurability = used.getType().getMaxDurability();
-        if (maxDurability == 0 || damageable.getDamage() < maxDurability - 1) {
-            return;
-        }
 
-        EquipmentSlot itemSlotTemp = null;
+        ItemStack used = event.getBrokenItem();
+
+        EquipmentSlot itemSlot = null;
         for (EquipmentSlot slot : EquipmentSlot.values()) {
-            ItemStack slotItem = player.getInventory().getItem(slot);
-            if (slotItem != null && !slotItem.getType().isAir() && slotItem.equals(used)) {
-                itemSlotTemp = slot;
+            if (used.equals(player.getInventory().getItem(slot))) {
+                itemSlot = slot;
                 break;
             }
         }
-        final EquipmentSlot itemSlot = itemSlotTemp;
         if (itemSlot == null || !plugin.mainConfig().appliedSlotsDropBroken().contains(itemSlot)) {
             return;
         }
 
-        event.setCancelled(true);
+        player.setMetadata(DROPPED.getKey(), new FixedMetadataValue(plugin, null));
 
-        ItemStack drop = used.clone();
-        drop.setAmount(1);
-        damageable.setDamage(drop.getType().getMaxDurability() - 1);
-        damageable.getPersistentDataContainer().set(DROPPED, PersistentDataType.STRING, player.getUniqueId().toString());
-        drop.setItemMeta(damageable);
-
-        if (player.getInventory().getItem(itemSlot).equals(used)) {
-            if (used.getAmount() > 1) {
-                used.setAmount(used.getAmount() - 1);
-                player.getInventory().setItem(itemSlot, used);
-            } else {
-                player.getInventory().setItem(itemSlot, null);
-            }
+        if (itemSlot == EquipmentSlot.HAND) {
+            used.setAmount(used.getAmount() + 1);
+            player.dropItem(false);
         } else {
-            player.getInventory().removeItem(drop);
+            ItemStack drop = used.clone();
+            drop.setAmount(1);
+            ItemStack handItem = player.getInventory().getItemInMainHand();
+            player.getInventory().setItemInMainHand(drop);
+            player.dropItem(false);
+            player.getInventory().setItemInMainHand(handItem);
         }
 
-        ItemStack handItem = player.getInventory().getItemInMainHand();
-        player.getInventory().setItemInMainHand(drop);
-        player.dropItem(false);
         if (plugin.mainConfig().debug()) {
-            plugin.getLogger().info("debug: " + player.getName() + " broke " + drop.getType().name() + " but cancelled and dropped it.");
+            plugin.getLogger().info("debug: " + player.getName() + " broke " + used.getType().name() + " but cancelled and dropped it.");
         }
-        player.getInventory().setItemInMainHand(handItem);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onItemDrop(PlayerDropItemEvent event) {
-        Item item = event.getItemDrop();
-        ItemStack itemStack = item.getItemStack();
-        ItemMeta meta = itemStack.getItemMeta();
-        if (meta == null) {
-            return;
+        if (event.getPlayer().hasMetadata(DROPPED.getKey())) {
+            event.getPlayer().removeMetadata(DROPPED.getKey(), plugin);
+            ItemStack item = event.getItemDrop().getItemStack().clone();
+            Damageable damageable = Objects.requireNonNull((Damageable) item.getItemMeta());
+            damageable.setDamage(damageable.getDamage() - 1);
+            item.setItemMeta(damageable);
+            event.getItemDrop().setItemStack(item);
+            event.getItemDrop().getPersistentDataContainer()
+                    .set(DROPPED, PersistentDataType.STRING, event.getPlayer().getUniqueId().toString());
         }
-
-        String droppedPlayerUidStr = meta.getPersistentDataContainer().get(DROPPED, PersistentDataType.STRING);
-        if (droppedPlayerUidStr == null) {
-            return;
-        }
-
-        UUID droppedPlayerUid;
-        try {
-            droppedPlayerUid = UUID.fromString(droppedPlayerUidStr);
-        } catch (IllegalArgumentException e) {
-            return;
-        }
-
-        meta.getPersistentDataContainer().remove(DROPPED);
-        itemStack.setItemMeta(meta);
-        item.setItemStack(itemStack);
-        item.getPersistentDataContainer().set(DROPPED, PersistentDataType.STRING, droppedPlayerUid.toString());
     }
 
     private UUID getDroppedEntityUid(Item item) {

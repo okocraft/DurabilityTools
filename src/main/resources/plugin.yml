@@ -16,7 +16,7 @@ permissions:
   durabilitytools.system.dropbefore:
     default: true
   durabilitytools.commands.repair:
-    default: true
+    default: op
   durabilitytools.commands.reload:
     default: op
   durabilitytools.commands.setdamage:
