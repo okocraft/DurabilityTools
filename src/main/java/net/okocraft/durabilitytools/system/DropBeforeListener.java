@@ -78,6 +78,7 @@ public class DropBeforeListener implements Listener {
             event.getItemDrop().setItemStack(item);
             event.getItemDrop().getPersistentDataContainer()
                     .set(DROPPED, PersistentDataType.STRING, event.getPlayer().getUniqueId().toString());
+            event.getItemDrop().setGlowing(true);
         }
     }
 
