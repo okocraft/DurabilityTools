@@ -3,6 +3,7 @@ version: "${project.version}"
 api-version: "1.17"
 main: "${project.groupId}.${project.artifactId}"
 author: "LazyGon"
+folia-supported: true
 
 softdepend:
   - "Vault"
@@ -23,4 +24,3 @@ permissions:
     default: op
   durabilitytools.commands.help:
     default: true
-
