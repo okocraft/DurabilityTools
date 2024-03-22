@@ -3,6 +3,7 @@ package net.okocraft.durabilitytools.system;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import net.kyori.adventure.text.Component;
 import net.okocraft.durabilitytools.DurabilityTools;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
@@ -23,6 +24,21 @@ import org.bukkit.persistence.PersistentDataType;
 
 @RequiredArgsConstructor
 public class DropBeforeListener implements Listener {
+
+    private static final boolean COMPONENT_SUPPORTED;
+
+    static {
+        boolean componentSupported;
+
+        try {
+            Class.forName("net.kyori.adventure.text.Component");
+            componentSupported = true;
+        } catch (ClassNotFoundException e) {
+            componentSupported = false;
+        }
+
+        COMPONENT_SUPPORTED = componentSupported;
+    }
 
     private final DurabilityTools plugin;
 
@@ -78,6 +94,18 @@ public class DropBeforeListener implements Listener {
             event.getItemDrop().setItemStack(item);
             event.getItemDrop().getPersistentDataContainer()
                     .set(DROPPED, PersistentDataType.STRING, event.getPlayer().getUniqueId().toString());
+            event.getItemDrop().setGlowing(true);
+
+            if (COMPONENT_SUPPORTED) {
+                Component itemDisplayName = damageable.displayName();
+                event.getItemDrop().customName(
+                        Component.text()
+                                .append(Component.text(event.getPlayer().getName() + "'s "))
+                                .append(itemDisplayName != null ? itemDisplayName : Component.translatable(item.getType().translationKey()))
+                                .build()
+                );
+                event.getItemDrop().setCustomNameVisible(true);
+            }
         }
     }
 
