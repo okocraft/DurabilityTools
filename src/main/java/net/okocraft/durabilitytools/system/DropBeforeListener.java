@@ -1,26 +1,28 @@
 package net.okocraft.durabilitytools.system;
 
-import java.util.Objects;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.okocraft.durabilitytools.DurabilityTools;
+import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Statistic;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataType;
+
+import java.util.Objects;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 public class DropBeforeListener implements Listener {
@@ -51,62 +53,75 @@ public class DropBeforeListener implements Listener {
             return;
         }
 
-        ItemStack used = event.getBrokenItem();
-
-        EquipmentSlot itemSlot = null;
-        for (EquipmentSlot slot : EquipmentSlot.values()) {
-            if (used.equals(player.getInventory().getItem(slot))) {
-                itemSlot = slot;
-                break;
+        ItemStack item = event.getBrokenItem().asOne();
+        boolean canDrop = false;
+        if (item.getItemMeta() instanceof Damageable meta) {
+            if (meta.hasMaxDamage()) {
+                meta.setDamage(meta.getMaxDamage() - 1);
+                canDrop = true;
+                item.setItemMeta(meta);
+            } else if (1 < item.getType().getMaxDurability()) {
+                meta.setDamage(item.getType().getMaxDurability() - 1);
+                canDrop = true;
+                item.setItemMeta(meta);
             }
         }
-        if (itemSlot == null || !plugin.mainConfig().appliedSlotsDropBroken().contains(itemSlot)) {
+
+        if (!canDrop) {
             return;
         }
 
-        player.setMetadata(DROPPED.getKey(), new FixedMetadataValue(plugin, null));
+        Location spawnLocation = player.getEyeLocation().add(0, -0.3, 0);
+        Item drop = player.getWorld().createEntity(spawnLocation, Item.class);
+        this.prepareItemEntityToDrop(drop, player, item);
 
-        if (itemSlot == EquipmentSlot.HAND) {
-            used.setAmount(used.getAmount() + 1);
-            player.dropItem(false);
-        } else {
-            ItemStack drop = used.clone();
-            drop.setAmount(1);
-            ItemStack handItem = player.getInventory().getItemInMainHand();
-            player.getInventory().setItemInMainHand(drop);
-            player.dropItem(false);
-            player.getInventory().setItemInMainHand(handItem);
+        if (!new PlayerDropItemEvent(player, drop).callEvent()) {
+            player.getInventory().addItem(item);
+            return;
         }
 
+        this.decorateItemEntity(drop, player);
+        this.increaseDropStat(player, item);
+        drop.spawnAt(spawnLocation, CreatureSpawnEvent.SpawnReason.DEFAULT);
+
         if (plugin.mainConfig().debug()) {
-            plugin.getLogger().info("debug: " + player.getName() + " broke " + used.getType().name() + " but cancelled and dropped it.");
+            plugin.getLogger().info("debug: " + player.getName() + " broke " + item.getType().name() + " but cancelled and dropped it.");
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
-    public void onItemDrop(PlayerDropItemEvent event) {
-        if (event.getPlayer().hasMetadata(DROPPED.getKey())) {
-            event.getPlayer().removeMetadata(DROPPED.getKey(), plugin);
-            ItemStack item = event.getItemDrop().getItemStack().clone();
-            Damageable damageable = Objects.requireNonNull((Damageable) item.getItemMeta());
-            damageable.setDamage(damageable.getDamage() - 1);
-            item.setItemMeta(damageable);
-            event.getItemDrop().setItemStack(item);
-            event.getItemDrop().getPersistentDataContainer()
-                    .set(DROPPED, PersistentDataType.STRING, event.getPlayer().getUniqueId().toString());
-            event.getItemDrop().setGlowing(true);
+    private void prepareItemEntityToDrop(Item item, Player owner, ItemStack originalItem) {
+        // See: ServerPlayer#createItemStackToDrop
+        item.setItemStack(originalItem);
+        item.setThrower(owner.getUniqueId());
+        item.setPickupDelay(40);
 
-            if (COMPONENT_SUPPORTED) {
-                Component itemDisplayName = damageable.displayName();
-                event.getItemDrop().customName(
-                        Component.text()
-                                .append(Component.text(event.getPlayer().getName() + "'s "))
-                                .append(itemDisplayName != null ? itemDisplayName : Component.translatable(item.getType().translationKey()))
-                                .build()
-                );
-                event.getItemDrop().setCustomNameVisible(true);
-            }
+        item.setVelocity(owner.getEyeLocation().getDirection().multiply(0.3));
+    }
+
+    private void decorateItemEntity(Item item, Player owner) {
+        item.getPersistentDataContainer().set(DROPPED, PersistentDataType.STRING, owner.getUniqueId().toString());
+        item.setGlowing(true);
+
+        if (COMPONENT_SUPPORTED) {
+            ItemStack itemStack = item.getItemStack();
+            Component itemDisplayName = itemStack.getItemMeta().displayName();
+            item.customName(
+                    Component.text()
+                            .append(Component.text(owner.getName() + "'s "))
+                            .append(itemDisplayName != null ? itemDisplayName : Component.translatable(itemStack.getType().translationKey()))
+                            .build()
+            );
+            item.setCustomNameVisible(true);
         }
+    }
+
+    // See: ServerPlayer#drop
+    private void increaseDropStat(Player player, ItemStack item) {
+        if (!item.isEmpty()) {
+            player.incrementStatistic(Statistic.DROP, item.getType());
+        }
+
+        player.incrementStatistic(Statistic.DROP_COUNT);
     }
 
     private UUID getDroppedEntityUid(Item item) {
