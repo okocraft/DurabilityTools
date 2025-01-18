@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
@@ -21,8 +22,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
 public class DropBeforeListener implements Listener {
@@ -43,13 +46,14 @@ public class DropBeforeListener implements Listener {
     }
 
     private final DurabilityTools plugin;
+    private final Map<UUID, Long> cannotDropPlayers = new ConcurrentHashMap<>();
 
     private static final NamespacedKey DROPPED = Objects.requireNonNull(NamespacedKey.fromString("dropped"));
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onPlayerItemBreak(PlayerItemBreakEvent event) {
         Player player = event.getPlayer();
-        if (!player.hasPermission("durabilitytools.system.dropbefore")) {
+        if (this.cannotDropPlayers.getOrDefault(player.getUniqueId(), 0L) == player.getWorld().getGameTime() || !player.hasPermission("durabilitytools.system.dropbefore")) {
             return;
         }
 
@@ -155,6 +159,16 @@ public class DropBeforeListener implements Listener {
 
         if (event.getCause() != EntityDamageEvent.DamageCause.VOID) {
             event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onBlockIgniteEvent(BlockIgniteEvent event) {
+        var player = event.getPlayer();
+        if (event.isCancelled() && player != null) {
+            var uuid = player.getUniqueId();
+            this.cannotDropPlayers.put(uuid, player.getWorld().getGameTime());
+            player.getScheduler().run(this.plugin, ignored -> this.cannotDropPlayers.remove(uuid), () -> this.cannotDropPlayers.remove(uuid));
         }
     }
 }
