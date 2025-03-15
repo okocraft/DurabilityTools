@@ -19,16 +19,23 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
 public class DropBeforeListener implements Listener {
+
+    private static final Set<ItemType> ITEMS_TO_IGNORE_BREAK = Set.of(
+            ItemType.CARROT_ON_A_STICK,
+            ItemType.WARPED_FUNGUS_ON_A_STICK
+    );
 
     private static final boolean COMPONENT_SUPPORTED;
 
@@ -52,6 +59,10 @@ public class DropBeforeListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onPlayerItemBreak(PlayerItemBreakEvent event) {
+        if (ITEMS_TO_IGNORE_BREAK.contains(event.getBrokenItem().getType().asItemType())) {
+            return;
+        }
+
         Player player = event.getPlayer();
         if (this.cannotDropPlayers.getOrDefault(player.getUniqueId(), 0L) == player.getWorld().getGameTime() || !player.hasPermission("durabilitytools.system.dropbefore")) {
             return;
