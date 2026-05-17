@@ -58,10 +58,9 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
             return "0";
         }
 
-        if (!(item.getItemMeta() instanceof Damageable)) {
+        if (!(item.getItemMeta() instanceof Damageable damageableMeta)) {
             return "0";
         }
-        Damageable damageableMeta = (Damageable) item.getItemMeta();
 
         int currentDamage = damageableMeta.getDamage();
         int maxDurability = item.getType().getMaxDurability() - 1;
@@ -76,10 +75,9 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
         }
 
         BaseCommand baseCommand = commands.getSubCommand("repair");
-        if (!(baseCommand instanceof RepairCommand)) {
+        if (!(baseCommand instanceof RepairCommand repairCommand)) {
             return "0";
         }
-        RepairCommand repairCommand = (RepairCommand) baseCommand;
         return String.valueOf(Math.round(wearRate * repairCommand.getCost(item)) / 100D);
     }
 }

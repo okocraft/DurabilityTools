@@ -3,8 +3,6 @@ package net.okocraft.durabilitytools.configuration.config.reapircommand.basecost
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.UnmodifiableView;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 public record BaseCost(double wood, double stone, double leather, double gold, double chain, double iron, double bow,
@@ -27,17 +25,17 @@ public record BaseCost(double wood, double stone, double leather, double gold, d
     }
 
     public @UnmodifiableView Map<String, Double> costs() {
-        Map<String, Double> costs = new HashMap<>();
-        costs.put("wood", wood);
-        costs.put("stone", stone);
-        costs.put("leather", leather);
-        costs.put("gold", gold);
-        costs.put("chain", chain);
-        costs.put("iron", iron);
-        costs.put("bow", bow);
-        costs.put("diamond", diamond);
-        costs.put("netherite", netherite);
-        return Collections.unmodifiableMap(costs);
+        return Map.of(
+            "wood", this.wood,
+            "stone", this.stone,
+            "leather", this.leather,
+            "gold", this.gold,
+            "chain", this.chain,
+            "iron", this.iron,
+            "bow", this.bow,
+            "diamond", this.diamond,
+            "netherite", this.netherite
+        );
     }
 
     public static BaseCost deserialize(ConfigurationSection section) {

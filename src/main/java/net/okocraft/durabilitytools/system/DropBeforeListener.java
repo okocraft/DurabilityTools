@@ -162,10 +162,9 @@ public class DropBeforeListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onItemDamaged(EntityDamageEvent event) {
         Entity entity = event.getEntity();
-        if (!(entity instanceof Item)) {
+        if (!(entity instanceof Item item)) {
             return;
         }
-        Item item = (Item) entity;
         if (getDroppedEntityUid(item) == null) {
             return;
         }

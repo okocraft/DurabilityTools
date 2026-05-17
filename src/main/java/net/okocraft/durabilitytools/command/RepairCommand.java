@@ -62,11 +62,10 @@ public class RepairCommand extends BaseCommand {
             return false;
         }
 
-        if (!(item.getItemMeta() instanceof Damageable)) {
+        if (!(item.getItemMeta() instanceof Damageable damageableMeta)) {
             messages.cannotRepairIt().sendTo(sender);
             return false;
         }
-        Damageable damageableMeta = (Damageable) item.getItemMeta();
 
         int currentDamage = damageableMeta.getDamage();
         int maxDurability = item.getType().getMaxDurability() - 1;
