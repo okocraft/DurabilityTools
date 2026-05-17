@@ -49,8 +49,8 @@ public class RepairCommand extends BaseCommand {
     @Override
     public boolean runCommand(CommandSender sender, String[] args) {
 
-        Config config = plugin.mainConfig();
-        Languages languages = plugin.languagesConfig();
+        Config config = this.plugin.mainConfig();
+        Languages languages = this.plugin.languagesConfig();
 
         Language lang = languages.language(sender);
         var messages = lang.command().repairCommand();
@@ -76,7 +76,7 @@ public class RepairCommand extends BaseCommand {
 
         double wearRate = Math.round(((double) currentDamage / (double) maxDurability) * 1000D) / 10D;
 
-        double cost = Math.round(wearRate * getCost(item)) / 100D;
+        double cost = Math.round(wearRate * this.getCost(item)) / 100D;
         cost = Math.min(config.repairCommand().maxCost(), cost);
 
         if (args.length < 2 || !args[1].equalsIgnoreCase("confirm")) {
@@ -84,12 +84,12 @@ public class RepairCommand extends BaseCommand {
             return true;
         }
 
-        if (economy.getBalance(player) < cost) {
+        if (this.economy.getBalance(player) < cost) {
             messages.notEnoughMoney().sendTo(sender);
             return false;
         }
 
-        economy.withdrawPlayer(player, cost);
+        this.economy.withdrawPlayer(player, cost);
 
         damageableMeta.setDamage(0);
         item.setItemMeta(damageableMeta);
@@ -99,17 +99,17 @@ public class RepairCommand extends BaseCommand {
     }
 
     public double getCost(ItemStack item) {
-        double base = getBaseCost(item.getType());
+        double base = this.getBaseCost(item.getType());
         double multiplier = 1;
         for (Map.Entry<Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
-            multiplier += getEnchantCost(entry.getKey(), entry.getValue());
+            multiplier += this.getEnchantCost(entry.getKey(), entry.getValue());
         }
 
         return Math.max(base * multiplier, 0);
     }
 
     private double getBaseCost(Material item) {
-        Map<String, Double> costs = plugin.mainConfig().repairCommand().baseCost().costs();
+        Map<String, Double> costs = this.plugin.mainConfig().repairCommand().baseCost().costs();
         for (String key : costs.keySet()) {
             if (item.name().startsWith(key.toUpperCase(Locale.ROOT))) {
                 return costs.get(key);
@@ -119,7 +119,7 @@ public class RepairCommand extends BaseCommand {
     }
 
     private double getEnchantCost(Enchantment enchant, int level) {
-        EnchantMultiplierPerLevel config = plugin.mainConfig().repairCommand().enchantMultiplierPerLevel();
+        EnchantMultiplierPerLevel config = this.plugin.mainConfig().repairCommand().enchantMultiplierPerLevel();
         if (enchant.isCursed()) {
             return config.cursed() * level;
         }

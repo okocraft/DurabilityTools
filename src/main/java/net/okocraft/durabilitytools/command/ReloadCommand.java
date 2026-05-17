@@ -18,9 +18,9 @@ public class ReloadCommand extends BaseCommand {
 
     @Override
     public boolean runCommand(CommandSender sender, String[] args) {
-        Language language = languages.language(sender);
+        Language language = this.languages.language(sender);
         language.command().reloadCommand().start().sendTo(sender);
-        plugin.reload();
+        this.plugin.reload();
         language.command().reloadCommand().complete().sendTo(sender);
         return true;
     }

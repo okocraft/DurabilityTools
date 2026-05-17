@@ -101,8 +101,8 @@ public class DropBeforeListener implements Listener {
         this.increaseDropStat(player, item);
         drop.spawnAt(spawnLocation, CreatureSpawnEvent.SpawnReason.DEFAULT);
 
-        if (plugin.mainConfig().debug()) {
-            plugin.getLogger().info("debug: " + player.getName() + " broke " + item.getType().name() + " but cancelled and dropped it.");
+        if (this.plugin.mainConfig().debug()) {
+            this.plugin.getLogger().info("debug: " + player.getName() + " broke " + item.getType().name() + " but cancelled and dropped it.");
         }
     }
 
@@ -153,7 +153,7 @@ public class DropBeforeListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onPickupItem(EntityPickupItemEvent event) {
-        UUID dropped = getDroppedEntityUid(event.getItem());
+        UUID dropped = this.getDroppedEntityUid(event.getItem());
         if (dropped != null && !dropped.equals(event.getEntity().getUniqueId())) {
             event.setCancelled(true);
         }
@@ -165,7 +165,7 @@ public class DropBeforeListener implements Listener {
         if (!(entity instanceof Item item)) {
             return;
         }
-        if (getDroppedEntityUid(item) == null) {
+        if (this.getDroppedEntityUid(item) == null) {
             return;
         }
 

@@ -30,17 +30,17 @@ public class Commands implements CommandExecutor, TabCompleter {
 
     private void register(BaseCommand subCommand) {
         String commandName = subCommand.name().toLowerCase(Locale.ROOT);
-        if (registeredSubCommands.containsKey(commandName)) {
-            plugin.getLogger().warning("The command " + commandName + " is already registered.");
+        if (this.registeredSubCommands.containsKey(commandName)) {
+            this.plugin.getLogger().warning("The command " + commandName + " is already registered.");
             return;
         }
 
-        registeredSubCommands.put(commandName, subCommand);
+        this.registeredSubCommands.put(commandName, subCommand);
     }
 
     @Nullable
     public BaseCommand getSubCommand(String name) {
-        for (BaseCommand subCommand : registeredSubCommands.values()) {
+        for (BaseCommand subCommand : this.registeredSubCommands.values()) {
             if (subCommand.name().equalsIgnoreCase(name)) {
                 return subCommand;
             }
@@ -59,11 +59,11 @@ public class Commands implements CommandExecutor, TabCompleter {
         pluginCommand.setExecutor(this);
         pluginCommand.setTabCompleter(this);
 
-        register(new HelpCommand(this));
-        register(new ReloadCommand(this));
-        register(new SetDamageCommand(this));
+        this.register(new HelpCommand(this));
+        this.register(new ReloadCommand(this));
+        this.register(new SetDamageCommand(this));
         try {
-            register(new RepairCommand(this));
+            this.register(new RepairCommand(this));
         } catch (Throwable t) {
             plugin.getLogger().log(Level.WARNING, "Cannot load vault. repair command has been disabled.");
         }
@@ -72,15 +72,15 @@ public class Commands implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         BaseCommand subCommand;
-        Language language = languages.language(sender);
+        Language language = this.languages.language(sender);
         var command = language.command();
 
         if (args.length == 0) {
-            command.noArgMessage().sendTo(sender, plugin.getDescription().getVersion());
+            command.noArgMessage().sendTo(sender, this.plugin.getDescription().getVersion());
             return true;
         }
 
-        if ((subCommand = getSubCommand(args[0])) == null) {
+        if ((subCommand = this.getSubCommand(args[0])) == null) {
             command.noSuchCommand().sendTo(sender);
             return true;
         }
@@ -106,7 +106,7 @@ public class Commands implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        List<String> permittedCommands = getPermittedCommandNames(sender);
+        List<String> permittedCommands = this.getPermittedCommandNames(sender);
         if (args.length == 1) {
             return StringUtil.copyPartialMatches(args[0], permittedCommands, new ArrayList<>());
         }
@@ -115,14 +115,14 @@ public class Commands implements CommandExecutor, TabCompleter {
             return List.of();
         }
 
-        return Optional.ofNullable(getSubCommand(args[0]))
+        return Optional.ofNullable(this.getSubCommand(args[0]))
             .map(c -> c.runTabComplete(sender, args))
             .orElseGet(ArrayList::new);
     }
 
     public List<BaseCommand> getPermittedCommands(CommandSender sender) {
         List<BaseCommand> result = new ArrayList<>();
-        for (BaseCommand subCommand : registeredSubCommands.values()) {
+        for (BaseCommand subCommand : this.registeredSubCommands.values()) {
             if (subCommand.hasPermission(sender)) {
                 result.add(subCommand);
             }
@@ -132,7 +132,7 @@ public class Commands implements CommandExecutor, TabCompleter {
 
     private List<String> getPermittedCommandNames(CommandSender sender) {
         List<String> result = new ArrayList<>();
-        for (BaseCommand subCommand : registeredSubCommands.values()) {
+        for (BaseCommand subCommand : this.registeredSubCommands.values()) {
             if (subCommand.hasPermission(sender)) {
                 result.add(subCommand.name().toLowerCase(Locale.ROOT));
                 result.addAll(subCommand.alias());

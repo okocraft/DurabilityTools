@@ -11,7 +11,7 @@ public record Message(@NotNull String prefix, @NotNull String value) {
     }
 
     public void sendTo(CommandSender sender) {
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', prefix + value));
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', this.prefix + this.value));
     }
 
     public @NotNull String value() {

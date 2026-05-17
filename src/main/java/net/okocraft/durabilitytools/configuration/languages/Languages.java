@@ -21,21 +21,21 @@ public class Languages {
 
     public Languages(DurabilityTools plugin) {
         this.plugin = plugin;
-        loadLanguage(DEFAULT_LANGUAGE);
+        this.loadLanguage(DEFAULT_LANGUAGE);
     }
 
     private Language loadLanguage(String languageCode) {
-        ConfigurationSection languageSection = languageConfig(languageCode);
+        ConfigurationSection languageSection = this.languageConfig(languageCode);
         if (languageSection.getKeys(true).isEmpty()) {
             return null;
         }
         Language language = Language.deserialize(languageSection);
-        languages.put(languageCode, language);
+        this.languages.put(languageCode, language);
         return language;
     }
 
     private YamlConfiguration languageConfig(String languageCode) {
-        return plugin.getConfig("languages/" + languageCode + ".yml");
+        return this.plugin.getConfig("languages/" + languageCode + ".yml");
     }
 
     public Language language(CommandSender viewer) {
@@ -43,20 +43,20 @@ public class Languages {
         if (viewer instanceof Player) {
             languageCode = ((Player) viewer).getLocale();
         }
-        return language(languageCode);
+        return this.language(languageCode);
     }
 
     private Language language(String languageCode) throws IllegalStateException {
-        Language lang = languages.get(languageCode);
+        Language lang = this.languages.get(languageCode);
         if (lang != null) {
             return lang;
         }
 
-        lang = loadLanguage(languageCode);
+        lang = this.loadLanguage(languageCode);
         if (lang != null) {
             return lang;
         }
-        return Optional.ofNullable(languages.get(DEFAULT_LANGUAGE)).orElseThrow(
+        return Optional.ofNullable(this.languages.get(DEFAULT_LANGUAGE)).orElseThrow(
             () -> new IllegalStateException("Default language " + DEFAULT_LANGUAGE + " is not included in jar.")
         );
     }

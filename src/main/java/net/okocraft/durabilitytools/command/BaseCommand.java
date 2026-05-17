@@ -40,15 +40,15 @@ public abstract class BaseCommand {
     }
 
     public boolean validateArgsLength(int argsLength) {
-        return leastArgLength() <= argsLength;
+        return this.leastArgLength() <= argsLength;
     }
 
     public boolean hasPermission(CommandSender sender) {
-        if (permissionNode == null || permissionNode.isEmpty()) {
+        if (this.permissionNode == null || this.permissionNode.isEmpty()) {
             return true;
         }
 
-        return sender.hasPermission(permissionNode());
+        return sender.hasPermission(this.permissionNode());
     }
 
     public String name() {

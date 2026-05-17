@@ -13,7 +13,7 @@ public record PlaceholderMessage<P1>(@NotNull String prefix, @NotNull String val
     public void sendTo(CommandSender sender, P1 placeholderValue) {
         sender.sendMessage(ChatColor.translateAlternateColorCodes(
             '&',
-            prefix + value.replace(placeholderKey, placeholderValue.toString())
+            this.prefix + this.value.replace(this.placeholderKey, placeholderValue.toString())
         ));
     }
 

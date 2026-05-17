@@ -25,12 +25,12 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getAuthor() {
-        return plugin.getDescription().getAuthors().toString();
+        return this.plugin.getDescription().getAuthors().toString();
     }
 
     @Override
     public @NotNull String getVersion() {
-        return plugin.getDescription().getVersion();
+        return this.plugin.getDescription().getVersion();
     }
 
     @Override
@@ -45,7 +45,7 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String identifier) {
-        if (player == null || !(plugin instanceof DurabilityTools)) {
+        if (player == null || !(this.plugin instanceof DurabilityTools)) {
             return "0";
         }
 
@@ -69,7 +69,7 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
         }
         double wearRate = Math.round(((double) currentDamage / (double) maxDurability) * 1000D) / 10D;
 
-        Commands commands = ((DurabilityTools) plugin).commands();
+        Commands commands = ((DurabilityTools) this.plugin).commands();
         if (commands == null) {
             return "0";
         }

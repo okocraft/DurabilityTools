@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 
 public class DurabilityTools extends JavaPlugin implements Listener {
 
-    private @NotNull Config mainConfig = Config.deserialize(getConfig("config.yml"));
+    private @NotNull Config mainConfig = Config.deserialize(this.getConfig("config.yml"));
     private @NotNull Languages languagesConfig = new Languages(this);
 
     @Nullable
@@ -26,26 +26,26 @@ public class DurabilityTools extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        getServer().getPluginManager().registerEvents(new DropBeforeListener(this), this);
-        getServer().getPluginManager().registerEvents(new ReduceDamageListener(this), this);
+        this.getServer().getPluginManager().registerEvents(new DropBeforeListener(this), this);
+        this.getServer().getPluginManager().registerEvents(new ReduceDamageListener(this), this);
 
         this.commands = new Commands(this);
         try {
             new PlaceholderAPIHook(this).register();
         } catch (Error e) {
-            getLogger().warning("Cannot load placeholderapi. ignored.");
+            this.getLogger().warning("Cannot load placeholderapi. ignored.");
         }
     }
 
     public void reload() {
-        this.mainConfig = Config.deserialize(getConfig("config.yml"));
+        this.mainConfig = Config.deserialize(this.getConfig("config.yml"));
         this.languagesConfig = new Languages(this);
     }
 
     public void saveDefaultConfig(String configName) throws IllegalArgumentException {
-        File configFile = new File(getDataFolder(), configName);
+        File configFile = new File(this.getDataFolder(), configName);
         if (!configFile.exists()) {
-            saveResource(configName, false);
+            this.saveResource(configName, false);
         }
     }
 
@@ -54,13 +54,13 @@ public class DurabilityTools extends JavaPlugin implements Listener {
             return new YamlConfiguration();
         }
         try {
-            saveDefaultConfig(configName);
+            this.saveDefaultConfig(configName);
         } catch (IllegalArgumentException e) {
             return new YamlConfiguration();
         }
 
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(new File(getDataFolder(), configName));
-        InputStream inputStream = getResource(configName);
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(new File(this.getDataFolder(), configName));
+        InputStream inputStream = this.getResource(configName);
         if (inputStream != null) {
             config.setDefaults(
                 YamlConfiguration.loadConfiguration(new InputStreamReader(inputStream, StandardCharsets.UTF_8)));

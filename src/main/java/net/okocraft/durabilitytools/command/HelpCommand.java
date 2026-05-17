@@ -18,9 +18,9 @@ public class HelpCommand extends BaseCommand {
 
     @Override
     public boolean runCommand(CommandSender sender, String[] args) {
-        var helpCommand = languages.language(sender).command().helpCommand();
+        var helpCommand = this.languages.language(sender).command().helpCommand();
 
-        List<BaseCommand> permittedCommands = registration.getPermittedCommands(sender);
+        List<BaseCommand> permittedCommands = this.registration.getPermittedCommands(sender);
         if (permittedCommands.isEmpty()) {
             helpCommand.noPermittedCommand().sendTo(sender);
             return true;

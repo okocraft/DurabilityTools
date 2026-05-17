@@ -17,9 +17,9 @@ public record Description(@NotNull String help, @NotNull String reload, @NotNull
 
     public String get(String command) {
         return switch (command) {
-            case "help" -> help;
-            case "reload" -> reload;
-            case "repair" -> repair;
+            case "help" -> this.help;
+            case "reload" -> this.reload;
+            case "repair" -> this.repair;
             default -> null;
         };
     }
