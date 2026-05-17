@@ -1,10 +1,5 @@
 package net.okocraft.durabilitytools;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import lombok.NonNull;
 import net.okocraft.durabilitytools.command.Commands;
 import net.okocraft.durabilitytools.configuration.config.Config;
 import net.okocraft.durabilitytools.configuration.languages.Languages;
@@ -13,19 +8,19 @@ import net.okocraft.durabilitytools.system.ReduceDamageListener;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import lombok.Getter;
-import lombok.experimental.Accessors;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@Accessors(fluent = true)
-@Getter
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+
 public class DurabilityTools extends JavaPlugin implements Listener {
 
-    private @NonNull Config mainConfig = Config.deserialize(getConfig("config.yml"));
-    private @NonNull Languages languagesConfig = new Languages(this);
+    private @NotNull Config mainConfig = Config.deserialize(getConfig("config.yml"));
+    private @NotNull Languages languagesConfig = new Languages(this);
 
-    @Getter
     @Nullable
     private Commands commands;
 
@@ -68,8 +63,20 @@ public class DurabilityTools extends JavaPlugin implements Listener {
         InputStream inputStream = getResource(configName);
         if (inputStream != null) {
             config.setDefaults(
-                    YamlConfiguration.loadConfiguration(new InputStreamReader(inputStream, StandardCharsets.UTF_8)));
+                YamlConfiguration.loadConfiguration(new InputStreamReader(inputStream, StandardCharsets.UTF_8)));
         }
         return config;
+    }
+
+    public @NotNull Config mainConfig() {
+        return this.mainConfig;
+    }
+
+    public @NotNull Languages languagesConfig() {
+        return this.languagesConfig;
+    }
+
+    public @Nullable Commands commands() {
+        return this.commands;
     }
 }

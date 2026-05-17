@@ -1,8 +1,5 @@
 package net.okocraft.durabilitytools.configuration.languages;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import net.okocraft.durabilitytools.DurabilityTools;
 import net.okocraft.durabilitytools.configuration.languages.language.Language;
 import org.bukkit.command.CommandSender;
@@ -10,12 +7,16 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 public class Languages {
 
     private static final String DEFAULT_LANGUAGE = "en_us";
-    
+
     private final DurabilityTools plugin;
-    
+
     private final Map<String, Language> languages = new HashMap<>();
 
     public Languages(DurabilityTools plugin) {
@@ -44,7 +45,7 @@ public class Languages {
         }
         return language(languageCode);
     }
-    
+
     private Language language(String languageCode) throws IllegalStateException {
         Language lang = languages.get(languageCode);
         if (lang != null) {
@@ -56,7 +57,7 @@ public class Languages {
             return lang;
         }
         return Optional.ofNullable(languages.get(DEFAULT_LANGUAGE)).orElseThrow(
-                () -> new IllegalStateException("Default language " + DEFAULT_LANGUAGE + " is not included in jar.")
+            () -> new IllegalStateException("Default language " + DEFAULT_LANGUAGE + " is not included in jar.")
         );
     }
 }

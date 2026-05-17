@@ -1,36 +1,27 @@
 package net.okocraft.durabilitytools.configuration.config;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.experimental.Accessors;
-import net.okocraft.durabilitytools.configuration.Serializable;
 import net.okocraft.durabilitytools.configuration.config.reapircommand.RepairCommand;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.EquipmentSlot;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
-@Accessors(fluent = true)
-@AllArgsConstructor
-public @Data class Config implements Serializable {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-    private boolean debug;
-    private int maxItemDamage;
-    private @NonNull @Unmodifiable List<EquipmentSlot> appliedSlotsDropBroken;
-    private @NonNull RepairCommand repairCommand;
+public record Config(boolean debug, int maxItemDamage,
+                     @NotNull @Unmodifiable List<EquipmentSlot> appliedSlotsDropBroken,
+                     @NotNull RepairCommand repairCommand) {
 
     public static final Config DEFAULT_CONTENTS = new Config();
 
     private Config() {
         this(
-                true,
-                3,
-                List.of(EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD),
-                RepairCommand.DEFAULT_CONTENTS
+            true,
+            3,
+            List.of(EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD),
+            RepairCommand.DEFAULT_CONTENTS
         );
     }
 
@@ -48,23 +39,10 @@ public @Data class Config implements Serializable {
         }
 
         return new Config(
-                contents.getBoolean("debug"),
-                contents.getInt("max-item-damage", DEFAULT_CONTENTS.maxItemDamage),
-                Collections.unmodifiableList(appliedSlotsDropBroken),
-                RepairCommand.deserialize(contents.getConfigurationSection("repair-command"))
+            contents.getBoolean("debug"),
+            contents.getInt("max-item-damage", DEFAULT_CONTENTS.maxItemDamage),
+            Collections.unmodifiableList(appliedSlotsDropBroken),
+            RepairCommand.deserialize(contents.getConfigurationSection("repair-command"))
         );
-    }
-    
-    @Override
-    public void storeContents(ConfigurationSection section) {
-        section.set("debug", debug);
-        section.set("max-item-damage", maxItemDamage);
-        section.set(
-                "applied-slots-drop-broken",
-                appliedSlotsDropBroken.stream()
-                        .map(EquipmentSlot::name)
-                        .collect(Collectors.toList())
-        );
-        repairCommand.storeContents(section.createSection("repair-command"));
     }
 }

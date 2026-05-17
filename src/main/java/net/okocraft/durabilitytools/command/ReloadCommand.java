@@ -5,7 +5,7 @@ import org.bukkit.command.CommandSender;
 
 public class ReloadCommand extends BaseCommand {
 
-    protected ReloadCommand(Commands registration) {
+    public ReloadCommand(Commands registration) {
         super(
             registration,
             "reload",
@@ -15,7 +15,6 @@ public class ReloadCommand extends BaseCommand {
             "/dt reload"
         );
     }
-
 
     @Override
     public boolean runCommand(CommandSender sender, String[] args) {

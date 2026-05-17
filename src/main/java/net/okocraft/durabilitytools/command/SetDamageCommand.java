@@ -8,7 +8,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class SetDamageCommand extends BaseCommand {
 
-    protected SetDamageCommand(Commands registration) {
+    public SetDamageCommand(Commands registration) {
         super(
             registration,
             "setdamage",
@@ -19,7 +19,6 @@ public class SetDamageCommand extends BaseCommand {
         );
     }
 
-
     @Override
     public boolean runCommand(CommandSender sender, String[] args) {
         Player player = (Player) sender;
@@ -29,9 +28,9 @@ public class SetDamageCommand extends BaseCommand {
             return false;
         }
 
-        int damage = 0;
+        int damage;
         try {
-            damage = Math.max(0, Math.min(item.getType().getMaxDurability() - 1, Integer.parseInt(args[1])));
+            damage = Math.clamp(Integer.parseInt(args[1]), 0, item.getType().getMaxDurability() - 1);
         } catch (NumberFormatException e) {
             return false;
         }

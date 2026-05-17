@@ -1,7 +1,5 @@
 package net.okocraft.durabilitytools.command;
 
-import java.util.Locale;
-import java.util.Map;
 import net.milkbowl.vault.economy.Economy;
 import net.okocraft.durabilitytools.DurabilityTools;
 import net.okocraft.durabilitytools.configuration.config.Config;
@@ -17,18 +15,21 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
+import java.util.Locale;
+import java.util.Map;
+
 public class RepairCommand extends BaseCommand {
 
     private final Economy economy;
 
-    protected RepairCommand(Commands registration) {
+    public RepairCommand(Commands registration) {
         super(
-                registration,
-                "repair",
-                "durabilitytools.commands.repair",
-                1,
-                true,
-                "/dt repair [confirm]"
+            registration,
+            "repair",
+            "durabilitytools.commands.repair",
+            1,
+            true,
+            "/dt repair [confirm]"
         );
 
         DurabilityTools plugin = registration.plugin;
@@ -74,7 +75,7 @@ public class RepairCommand extends BaseCommand {
             return false;
         }
 
-        double wearRate = Math.round(((double) currentDamage / (double) maxDurability) * 1000D)/10D;
+        double wearRate = Math.round(((double) currentDamage / (double) maxDurability) * 1000D) / 10D;
 
         double cost = Math.round(wearRate * getCost(item)) / 100D;
         cost = Math.min(config.repairCommand().maxCost(), cost);
@@ -118,19 +119,19 @@ public class RepairCommand extends BaseCommand {
         return 0;
     }
 
-    @SuppressWarnings("deprecation")
     private double getEnchantCost(Enchantment enchant, int level) {
         EnchantMultiplierPerLevel config = plugin.mainConfig().repairCommand().enchantMultiplierPerLevel();
         if (enchant.isCursed()) {
             return config.cursed() * level;
         }
-        switch (enchant.getMaxLevel()) {
-            case 1: return config.maxLevel1() * level;
-            case 2: return config.maxLevel2() * level;
-            case 3: return config.maxLevel3() * level;
-            case 4: return config.maxLevel4() * level;
-            case 5: return config.maxLevel5() * level;
-            default: return 0;
-        }
+
+        return switch (enchant.getMaxLevel()) {
+            case 1 -> config.maxLevel1() * level;
+            case 2 -> config.maxLevel2() * level;
+            case 3 -> config.maxLevel3() * level;
+            case 4 -> config.maxLevel4() * level;
+            case 5 -> config.maxLevel5() * level;
+            default -> 0;
+        };
     }
 }

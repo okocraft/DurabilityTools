@@ -1,14 +1,6 @@
 package net.okocraft.durabilitytools.command;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-
-import java.util.Optional;
-import java.util.logging.Level;
+import net.okocraft.durabilitytools.DurabilityTools;
 import net.okocraft.durabilitytools.configuration.languages.Languages;
 import net.okocraft.durabilitytools.configuration.languages.language.Language;
 import org.bukkit.command.Command;
@@ -21,15 +13,22 @@ import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.okocraft.durabilitytools.DurabilityTools;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.logging.Level;
 
 public class Commands implements CommandExecutor, TabCompleter {
 
-    protected final DurabilityTools plugin;
-    protected final Languages languages;
-    protected final Map<String, BaseCommand> registeredSubCommands = new LinkedHashMap<>();
+    final DurabilityTools plugin;
+    final Languages languages;
+    private final Map<String, BaseCommand> registeredSubCommands = new LinkedHashMap<>();
 
-    protected void register(BaseCommand subCommand) {
+    private void register(BaseCommand subCommand) {
         String commandName = subCommand.name().toLowerCase(Locale.ROOT);
         if (registeredSubCommands.containsKey(commandName)) {
             plugin.getLogger().warning("The command " + commandName + " is already registered.");
@@ -37,10 +36,6 @@ public class Commands implements CommandExecutor, TabCompleter {
         }
 
         registeredSubCommands.put(commandName, subCommand);
-    }
-
-    public List<BaseCommand> getRegisteredCommands() {
-        return new ArrayList<>(registeredSubCommands.values());
     }
 
     @Nullable
@@ -79,12 +74,12 @@ public class Commands implements CommandExecutor, TabCompleter {
         BaseCommand subCommand;
         Language language = languages.language(sender);
         var command = language.command();
-        
+
         if (args.length == 0) {
             command.noArgMessage().sendTo(sender, plugin.getDescription().getVersion());
             return true;
         }
-        
+
         if ((subCommand = getSubCommand(args[0])) == null) {
             command.noSuchCommand().sendTo(sender);
             return true;
@@ -121,8 +116,8 @@ public class Commands implements CommandExecutor, TabCompleter {
         }
 
         return Optional.ofNullable(getSubCommand(args[0]))
-                .map(c -> c.runTabComplete(sender, args))
-                .orElseGet(ArrayList::new);
+            .map(c -> c.runTabComplete(sender, args))
+            .orElseGet(ArrayList::new);
     }
 
     public List<BaseCommand> getPermittedCommands(CommandSender sender) {

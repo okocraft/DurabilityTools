@@ -1,20 +1,10 @@
 package net.okocraft.durabilitytools.configuration.languages;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.experimental.Accessors;
-import org.bukkit.command.CommandSender;
-
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
-@Accessors(fluent = true)
-@AllArgsConstructor
-public @Data class PlaceholderMessage<P1> {
-
-    private @NonNull String prefix;
-    private @NonNull String value;
-    private @NonNull String placeholderKey;
+public record PlaceholderMessage<P1>(@NotNull String prefix, @NotNull String value, @NotNull String placeholderKey) {
 
     public PlaceholderMessage(String value, String placeholderKey) {
         this("", value, placeholderKey);
@@ -22,8 +12,13 @@ public @Data class PlaceholderMessage<P1> {
 
     public void sendTo(CommandSender sender, P1 placeholderValue) {
         sender.sendMessage(ChatColor.translateAlternateColorCodes(
-                '&',
-                prefix + value.replace(placeholderKey, placeholderValue.toString())
+            '&',
+            prefix + value.replace(placeholderKey, placeholderValue.toString())
         ));
     }
+
+    public @NotNull String value() {
+        return this.value;
+    }
+
 }

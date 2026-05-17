@@ -1,6 +1,5 @@
 package net.okocraft.durabilitytools.system;
 
-import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.okocraft.durabilitytools.DurabilityTools;
 import org.bukkit.Location;
@@ -29,12 +28,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@RequiredArgsConstructor
 public class DropBeforeListener implements Listener {
 
     private static final Set<ItemType> ITEMS_TO_IGNORE_BREAK = Set.of(
-            ItemType.CARROT_ON_A_STICK,
-            ItemType.WARPED_FUNGUS_ON_A_STICK
+        ItemType.CARROT_ON_A_STICK,
+        ItemType.WARPED_FUNGUS_ON_A_STICK
     );
 
     private static final boolean COMPONENT_SUPPORTED;
@@ -56,6 +54,10 @@ public class DropBeforeListener implements Listener {
     private final Map<UUID, Long> cannotDropPlayers = new ConcurrentHashMap<>();
 
     private static final NamespacedKey DROPPED = Objects.requireNonNull(NamespacedKey.fromString("dropped"));
+
+    public DropBeforeListener(DurabilityTools plugin) {
+        this.plugin = plugin;
+    }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onPlayerItemBreak(PlayerItemBreakEvent event) {
@@ -121,10 +123,10 @@ public class DropBeforeListener implements Listener {
             ItemStack itemStack = item.getItemStack();
             Component itemDisplayName = itemStack.getItemMeta().displayName();
             item.customName(
-                    Component.text()
-                            .append(Component.text(owner.getName() + "'s "))
-                            .append(itemDisplayName != null ? itemDisplayName : Component.translatable(itemStack.getType().translationKey()))
-                            .build()
+                Component.text()
+                    .append(Component.text(owner.getName() + "'s "))
+                    .append(itemDisplayName != null ? itemDisplayName : Component.translatable(itemStack.getType().translationKey()))
+                    .build()
             );
             item.setCustomNameVisible(true);
         }
@@ -142,7 +144,7 @@ public class DropBeforeListener implements Listener {
     private UUID getDroppedEntityUid(Item item) {
         try {
             return UUID.fromString(
-                    item.getPersistentDataContainer().getOrDefault(DROPPED, PersistentDataType.STRING, "")
+                item.getPersistentDataContainer().getOrDefault(DROPPED, PersistentDataType.STRING, "")
             );
         } catch (IllegalArgumentException e) {
             return null;
